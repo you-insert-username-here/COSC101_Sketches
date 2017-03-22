@@ -4,11 +4,7 @@ int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
 int asteroidSize = 60; //variable to store current asteroid size
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>(); //Create a new ListArray of Asteroid objects
-//float shipX = 300; //X- co-oridnate of the tip of the ship
-//float shipY = 300; //Y- co-oridnate of the tip of the ship
 float shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
-//float sSpeedX = 0.0; //Variable to store ship X movement speed
-//float sSpeedY = 0.0; //Variable to store ship Y movement speed
 float acceleration = 0.03; //Increment of how fast the ship accelerates when keys pressed
 float drag = 0.995; //Coefficient of drag applied to the ship (almost 1 i.e space)
 boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
@@ -64,7 +60,7 @@ void shipCollision() {
     aY = asteroids.get(i).getY(); //get the y-coordinate of each asteroid and store here
     
     //Logical statement to check if the x and y of the ship are close enough to the x and y of the asteroid to make a collission
-    if(shipLocation.x < aX + asteroids.get(i).getSize() && shipLocation.x > aX - asteroids.get(i).getSize() && shipLocation.y < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
+    if(shipLocation.x < aX + asteroids.get(i).getSize() && shipLocation.x > aX - asteroids.get(i).getSize() && shipLocation.y < aY + asteroids.get(i).getSize() && shipLocation.y > aY - asteroids.get(i).getSize()) {
       //reset the ship to starting position
       shipLocation.x = 300; 
       shipLocation.y = 300; 
@@ -135,10 +131,10 @@ Function draws the ship triangle and allows for rotation (May create a ship clas
 **/
 void ship() {
   shipSpeed.x *= drag; //Slow the ship based on drag co-efficient
-  shipSpeed.x *= drag; //Slow the ship based on drag co-efficient
+  shipSpeed.y *= drag; //Slow the ship based on drag co-efficient
   
-  shipLocation.x += sSpeedX; //Move the ship based on current speed
-  shipLocation.y += sSpeedY; //Move the ship based on current speed
+  shipLocation.x += shipSpeed.x; //Move the ship based on current speed
+  shipLocation.y += shipSpeed.y; //Move the ship based on current speed
 
 //This code will move the ship to opposite side if it reaches the boundaries    
   if (shipLocation.x > width + 10) 
@@ -157,12 +153,12 @@ void ship() {
       shipAngle += radians(3.0); //Rotate ship right 3.0 degrees
     }
     if (buttonPressed[UP]) { //If the Up key is pressed do this.
-      sSpeedX += cos(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
-      sSpeedY += sin(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
+      shipSpeed.x += cos(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
+      shipSpeed.y += sin(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
     }
     if (buttonPressed[DOWN]) { //If the Down key is pressed do this.
-      sSpeedX -= cos(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
-      sSpeedY -= sin(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
+      shipSpeed.x -= cos(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
+      shipSpeed.y -= sin(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
     }
     
     
