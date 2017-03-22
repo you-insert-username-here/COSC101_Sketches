@@ -1,17 +1,21 @@
 int score = 0; //variable holds the score
 int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
-int asteroidSize = 64; //variable to store current asteroid size
+int asteroidSize = 60; //variable to store current asteroid size
 int asteroidNum = 3; //variable to store the number of asteroids to be drawn
 PShape a; //PShape for the design of the asteroids
 Asteroid[] myAsteroids = new Asteroid[asteroidNum]; //Create a new array of asteroid objects
-float tx1 = 300; //X- co-oridnate of the tip of the ship
-float ty1 = 300; //Y- co-oridnate of the tip of the ship
-float angle = 0; //Angle that the ship is facing
-
+float shipX = 300; //X- co-oridnate of the tip of the ship
+float shipY = 300; //Y- co-oridnate of the tip of the ship
+float shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
+float sSpeedX = 0.0; //Variable to store ship X movement speed
+float sSpeedY = 0.0; //Variable to store ship Y movement speed
+float acceleration = 0.03; //Increment of how fast the ship accelerates when keys pressed
+float drag = 0.9999; //Coefficient of drag applied to the ship (almost 1 i.e space)
+boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
 
 void setup() {
-  size(600, 600);
+  size(600, 600);  //Initilise screen size
   smooth();
   background(0); //Black
   asteroidsCreate(); //setup initial asteroids
@@ -62,21 +66,15 @@ void mousePressed() {
 }
 
 /**
-Function checks for ke presses
+Function checks for key presses and releases
 **/
 void keyPressed() {
-  if (key == CODED) { 
-    if(keyCode == LEFT) { //Left key pressed rotate ship left
-     angle--;
-    }
-    if(keyCode == RIGHT) { //Right key pressed rotate ship right
-    angle++;
-    }
-    if(keyCode == UP) { //Still to be written
-    }
-  }
-}  
-
+    buttonPressed[keyCode] = true; //assign true to the key that has been pressed
+}
+ 
+void keyReleased() {
+    buttonPressed[keyCode] = false; //asign false to the key when the key is released
+}
 
 /**
 Function creates initial asteroids for start screen and game play.
@@ -97,16 +95,46 @@ void asteroidsCreate() {
 Function draws the ship triangle and allows for rotation (May create a ship class if requried)
 **/
 void ship() {
+  sSpeedX *= drag; //Slow the ship based on drag co-efficient
+  sSpeedY *= drag; //Slow the ship based on drag co-efficient
+  
+  shipX += sSpeedX; //Move the ship based on current speed
+  shipY += sSpeedY; //Move the ship based on current speed
+
+//This code will move the ship to opposite side if it reaches the boundaries    
+  if (shipX > width + 10) 
+    shipX = -10;
+  else if(shipX < -10) 
+    shipX = width + 10;
+  if(shipY > height + 20) 
+    shipY = -20;
+  else if (shipY < - 20) 
+    shipY = height + 20;
+      
+    if (buttonPressed[LEFT]) { //If the left key is pressed do this.
+     shipAngle -= radians(3.0); //Rotate ship left 3.0 degrees
+    }
+    if (buttonPressed[RIGHT]) { //If the right key is pressed do this.
+      shipAngle += radians(3.0); //Rotate ship right 3.0 degrees
+    }
+    if (buttonPressed[UP]) { //If the Up key is pressed do this.
+      sSpeedX += cos(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
+      sSpeedY += sin(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
+    }
+    if (buttonPressed[DOWN]) { //If the Down key is pressed do this.
+      sSpeedX -= cos(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
+      sSpeedY -= sin(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
+    }
+    
+    
   smooth(); 
   fill(255); //white
-  pushMatrix(); //Record the current center co-ord
-  translate(tx1, ty1); //Translate based of the ships tip x and y coordinate (to allow for rotation)
-  rotate(radians(angle)); //rotate based on the angle input from left or right arrow key
+  pushMatrix(); 
+  translate(shipX, shipY); //Translate based of the ships tip x and y coordinate (to allow for rotation)
+  rotate(shipAngle); //rotate based on the angle input from left or right arrow key
   //draw the new ship triangle
-  triangle (0, 0,  
-  -10, +30, +10, +30);
-  popMatrix(); //Return the center co-ord to previous co-ord.
-  
+  triangle (-20, -10, 10, 0, -20, 10);
+  popMatrix(); 
 }
 
 
