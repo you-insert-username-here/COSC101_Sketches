@@ -1,51 +1,89 @@
+import java.util.*;
 int score = 0; //variable holds the score
 int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
 int asteroidSize = 60; //variable to store current asteroid size
-int asteroidNum = 3; //variable to store the number of asteroids to be drawn
-PShape a; //PShape for the design of the asteroids
-Asteroid[] myAsteroids = new Asteroid[asteroidNum]; //Create a new array of asteroid objects
+ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>(); //Create a new ListArray of Asteroid objects
 float shipX = 300; //X- co-oridnate of the tip of the ship
 float shipY = 300; //Y- co-oridnate of the tip of the ship
 float shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
 float sSpeedX = 0.0; //Variable to store ship X movement speed
 float sSpeedY = 0.0; //Variable to store ship Y movement speed
 float acceleration = 0.03; //Increment of how fast the ship accelerates when keys pressed
-float drag = 0.9999; //Coefficient of drag applied to the ship (almost 1 i.e space)
+float drag = 0.995; //Coefficient of drag applied to the ship (almost 1 i.e space)
 boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
 
 void setup() {
   size(600, 600);  //Initilise screen size
   smooth();
   background(0); //Black
-  asteroidsCreate(); //setup initial asteroids
+  asteroidCreate(3, 60); //setup initial asteroids
+  asteroidCreate(2, 30); //smaller initial asteroids
+  asteroidCreate(1, 15); //smallest initial asteroids
 }
 
 void draw() {
   background(0);
   if (start == 0) { //Check if the user has started the game
     startMenu(); //Draw the start screen
-    for (int i = 0; i < asteroidNum; i++) {
-    myAsteroids[i].move();
+    for (int i = 0; i < asteroids.size(); i++) { //loop through the list of asteroids
+    asteroids.get(i).move(); //Make them move
     } 
   }
   else if(start == 1) { //If user clicks "PLAY GAME" do this
-    asteroidsCreate(); //Creates the games asteroids
-    start++; //Increment stat by 1 to ensure no more asteroids are created
+    asteroids.clear(); //Removes the start screen asteroids
+    asteroidCreate(3, 60); //Creates the games asteroids
+    start++; //Increment start by 1 to ensure no more asteroids are created
     }
   else { 
     ship(); //Displays the triangle ship
     //For loop to move each asteroid in the array of asteroids.
-    for (int i = 0; i < asteroidNum; i++) {
-    myAsteroids[i].move(); //Move function to move the asteroids
+    for (int i = 0; i < asteroids.size(); i++) {
+      asteroids.get(i).move(); //Move function to move the asteroids
+      shipCollision(); //Check if ship collides with any asteroid
     }     
-  }
+}
   fill(255); //white
   textSize(32); //Set the score text size
   text("SCORE: " + score, 10, 30); //Display score
   text("SHIPS: " + lives, 470, 30); //Display lives remaining
 }
 
+/**
+This function checks for ship collission with asteroids.
+**/
+void shipCollision() { 
+  for(int i = 0; i < asteroids.size(); i++) { //Loop through all asteroids to check if the collide with the ship
+    float aX = 0; //asteroid x coordinate
+    float aY = 0; //asteroid y coordinate
+        
+    aX = asteroids.get(i).getX(); //get the x-coordinate of each asteroid and store here
+    aY = asteroids.get(i).getY(); //get the y-coordinate of each asteroid and store here
+    
+    //Logical statement to check if the x and y of the ship are close enough to the x and y of the asteroid to make a collission
+    if(shipX < aX + asteroids.get(i).getSize() && shipX > aX - asteroids.get(i).getSize() && shipY < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
+      //reset the ship to starting position
+      shipX = 300; 
+      shipY = 300; 
+      
+      if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
+        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
+        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2)); 
+        asteroids.remove(i); //remove the asteroid that collided
+      }
+      else if(asteroids.get(i).getSize() == 30) { //If the asteroid that collides is a medium one create two small ones at asteroids current x/y
+        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
+        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
+        asteroids.remove(i); //Remove the medium asteroid
+      }
+      else if(asteroids.get(i).getSize() == 15) { //If the asteroid is the smallest one remove it all together
+        asteroids.remove(i);
+      }
+      
+      lives--; //Reduce the amount of ships remaining by one
+    }
+  }
+}
 /**
 Function draws the start screen.
 **/
@@ -69,26 +107,24 @@ void mousePressed() {
 Function checks for key presses and releases
 **/
 void keyPressed() {
-    buttonPressed[keyCode] = true; //assign true to the key that has been pressed
+    buttonPressed[keyCode] = true; //Assign true to the key that has been pressed
 }
  
 void keyReleased() {
-    buttonPressed[keyCode] = false; //asign false to the key when the key is released
+    buttonPressed[keyCode] = false; //Asign false to the key when the key is released
 }
 
 /**
 Function creates initial asteroids for start screen and game play.
 **/
-void asteroidsCreate() {
+void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) {
+  int a = amountOfAsteroids;
+  int size2 = sizeOfAsteroids;
   //Create the initial asteroids inside an array.   
-  for(int i = 0; i < asteroidNum; i++) { 
-  //Each asteroid has a random x and y starting co-ordinate between 0-600 and a random speed between -2,2
-  myAsteroids[i] = new Asteroid(int(random(0,600)), int(random(0,600)), random(-2,2), asteroidSize);
+  for(int i = 0; i < a; i++) { 
+  //Each asteroid has a random x and y starting co-ordinate between 0-600 and a random speed between -2,2 (Need to further limit this so asteroids can't start in middle)
+  asteroids.add(new Asteroid(int(random(0,600)), int(random(0,600)), random(-2,2), size2));
   }
-  //For loop to display each of the asteroids from the array of asteroids
-  for (int i = 0; i < asteroidNum; i++) {
-    myAsteroids[i].display();
-  }  
 }
   
 /**
@@ -142,6 +178,7 @@ void ship() {
 Asteroid Class creates asteroids objects.
 **/
 class Asteroid {
+  PShape a; //PShape for the design of the asteroids
   float x; //Stores the asteroids x co-ordinate
   float y; //Stores the asteroids y co-ordinate
   float speed; //sets the speed of the asteroid values between -2,2 are usually good -1,1 is slower
@@ -178,15 +215,6 @@ This function moves the asteroid based on its speed
   }
   
 /**
-This function reduces the size of the asteroid. (Not currently used but will be handy)
-**/  
-  void changeSize() {
-    if(size > 16) {
-    size /= 2;
-    }
-  }
- 
-/**
 The display() function ensures the asteroid is within the defined boundaries and then draws the asteroid.
 **/
   void display()
@@ -207,5 +235,26 @@ The display() function ensures the asteroid is within the defined boundaries and
     }
     
     shape(a, x, y); //draw the PShape (asteroid)
+  }
+  
+/**
+This function returns the current x co-ordinate of the asteroid
+**/
+  float getX() {
+    return x;
+  }
+  
+/**
+This function returns the current y co-ordinate of the asteroid
+**/ 
+  float getY() {
+    return y;
+  }
+  
+/**
+This function returns the current size of the asteroid
+**/  
+  int getSize() {
+    return size;
   }
 }
