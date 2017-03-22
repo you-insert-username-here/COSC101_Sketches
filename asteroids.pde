@@ -4,14 +4,17 @@ int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
 int asteroidSize = 60; //variable to store current asteroid size
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>(); //Create a new ListArray of Asteroid objects
-float shipX = 300; //X- co-oridnate of the tip of the ship
-float shipY = 300; //Y- co-oridnate of the tip of the ship
+//float shipX = 300; //X- co-oridnate of the tip of the ship
+//float shipY = 300; //Y- co-oridnate of the tip of the ship
 float shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
-float sSpeedX = 0.0; //Variable to store ship X movement speed
-float sSpeedY = 0.0; //Variable to store ship Y movement speed
+//float sSpeedX = 0.0; //Variable to store ship X movement speed
+//float sSpeedY = 0.0; //Variable to store ship Y movement speed
 float acceleration = 0.03; //Increment of how fast the ship accelerates when keys pressed
 float drag = 0.995; //Coefficient of drag applied to the ship (almost 1 i.e space)
 boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
+
+PVector shipLocation = new PVector(300, 300); // Ship location vector
+PVector shipSpeed = new PVector(0,0); // Ship speed vectors
 
 void setup() {
   size(600, 600);  //Initilise screen size
@@ -61,10 +64,10 @@ void shipCollision() {
     aY = asteroids.get(i).getY(); //get the y-coordinate of each asteroid and store here
     
     //Logical statement to check if the x and y of the ship are close enough to the x and y of the asteroid to make a collission
-    if(shipX < aX + asteroids.get(i).getSize() && shipX > aX - asteroids.get(i).getSize() && shipY < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
+    if(shipLocation.x < aX + asteroids.get(i).getSize() && shipLocation.x > aX - asteroids.get(i).getSize() && shipLocation.y < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
       //reset the ship to starting position
-      shipX = 300; 
-      shipY = 300; 
+      shipLocation.x = 300; 
+      shipLocation.y = 300; 
       
       if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
         asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
@@ -131,21 +134,21 @@ void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) {
 Function draws the ship triangle and allows for rotation (May create a ship class if requried)
 **/
 void ship() {
-  sSpeedX *= drag; //Slow the ship based on drag co-efficient
-  sSpeedY *= drag; //Slow the ship based on drag co-efficient
+  shipSpeed.x *= drag; //Slow the ship based on drag co-efficient
+  shipSpeed.x *= drag; //Slow the ship based on drag co-efficient
   
-  shipX += sSpeedX; //Move the ship based on current speed
-  shipY += sSpeedY; //Move the ship based on current speed
+  shipLocation.x += sSpeedX; //Move the ship based on current speed
+  shipLocation.y += sSpeedY; //Move the ship based on current speed
 
 //This code will move the ship to opposite side if it reaches the boundaries    
-  if (shipX > width + 10) 
-    shipX = -10;
-  else if(shipX < -10) 
-    shipX = width + 10;
-  if(shipY > height + 20) 
-    shipY = -20;
-  else if (shipY < - 20) 
-    shipY = height + 20;
+  if (shipLocation.x > width + 10) 
+    shipLocation.x = -10;
+  else if(shipLocation.x < -10) 
+    shipLocation.x = width + 10;
+  if(shipLocation.y > height + 20) 
+    shipLocation.y = -20;
+  else if (shipLocation.y < - 20) 
+    shipLocation.y = height + 20;
       
     if (buttonPressed[LEFT]) { //If the left key is pressed do this.
      shipAngle -= radians(3.0); //Rotate ship left 3.0 degrees
@@ -166,7 +169,7 @@ void ship() {
   smooth(); 
   fill(255); //white
   pushMatrix(); 
-  translate(shipX, shipY); //Translate based of the ships tip x and y coordinate (to allow for rotation)
+  translate(shipLocation.x, shipLocation.y); //Translate based of the ships tip x and y coordinate (to allow for rotation)
   rotate(shipAngle); //rotate based on the angle input from left or right arrow key
   //draw the new ship triangle
   triangle (-20, -10, 10, 0, -20, 10);
