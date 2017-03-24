@@ -30,23 +30,33 @@ void draw() {
     asteroids.get(i).move(); //Make them move
     } 
   }
-  else if(start == 1) { //If user clicks "PLAY GAME" do this
+  if (asteroids.size() == 0) {
+    reset();
+    start = 1;
+  }
+  if(start == 1) { //If user clicks "PLAY GAME" do this
     asteroids.clear(); //Removes the start screen asteroids
     asteroidCreate(3, 60); //Creates the games asteroids
     start++; //Increment start by 1 to ensure no more asteroids are created
     }
-  else { 
+  else if(lives < 1) {
+     start++;
+     gameOver();
+   }
+  else if(start == 2) { 
     ship(); //Displays the triangle ship
     //For loop to move each asteroid in the array of asteroids.
     for (int i = 0; i < asteroids.size(); i++) {
       asteroids.get(i).move(); //Move function to move the asteroids
       shipCollision(); //Check if ship collides with any asteroid
-    }     
-}
+      
+    }
+  }
   fill(255); //white
   textSize(32); //Set the score text size
   text("SCORE: " + score, 10, 30); //Display score
   text("SHIPS: " + lives, 470, 30); //Display lives remaining
+  
 }
 
 /**
@@ -64,7 +74,8 @@ void shipCollision() {
     if(shipX < aX + asteroids.get(i).getSize() && shipX > aX - asteroids.get(i).getSize() && shipY < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
       //reset the ship to starting position
       shipX = 300; 
-      shipY = 300; 
+      shipY = 300;
+      reset();
       
       if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
         asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
@@ -88,18 +99,48 @@ void shipCollision() {
 Function draws the start screen.
 **/
 void startMenu() {
+  fill(255);
   textSize(64);
   text("ASTEROIDS",120,300);
   textSize(32);
   text("PLAY GAME",200,450);
+
 }
-    
+
+/**
+Function draws the end screen
+**/
+void gameOver() {
+  textSize(64);
+  text("GAME OVER",120,300);
+  textSize(32);
+  text("RESET",265,450);
+}  
+
+/**
+This Function resets starting parameters.
+**/
+void reset() {
+  sSpeedX = 0.0;
+  sSpeedY = 0.0;
+  shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
+  acceleration = 0.03;
+  drag = 0.995;
+}
+
 /**
 Function checks for user mouse Click
 **/
 void mousePressed() {
   if(mouseX > 100 && mouseX < 500 && mouseY< 500 && mouseY > 400 && start == 0) {
     start = 1;
+    
+}
+  if(mouseX > 100 && mouseX < 500 && mouseY< 500 && mouseY > 400 && lives < 1){
+    start = 0;
+    score = 0;
+    lives = 3;
+    reset();
   }
 }
 
@@ -173,7 +214,6 @@ void ship() {
   popMatrix(); 
 }
 
-
 /**
 Asteroid Class creates asteroids objects.
 **/
@@ -184,6 +224,7 @@ class Asteroid {
   float speed; //sets the speed of the asteroid values between -2,2 are usually good -1,1 is slower
   float rotSpeed = 0; //sets the rotational speed of the asteroids. Not used yet but I want to rotate them the same as the ship
   int size; //stores the size of the asteroid
+  int n = round(random(0,1));
   
   Asteroid(float ax, float ay, float aSpeed, int aSize)
   {
@@ -191,6 +232,8 @@ class Asteroid {
     y = ay; //stores the y co-ordinate of the asteroid
     speed = aSpeed; //stores the speed of the asteroid, each is different
     size = aSize; //stores the size of the asteroid
+    
+    rotSpeed = random(-0.75, 0.75);
     
     //The following lines of code create the shape of the asteroid using a PShape
     a = createShape();
@@ -209,8 +252,15 @@ class Asteroid {
 This function moves the asteroid based on its speed
 **/
   void move() {
-    x += speed; //Change the x co-ordinate based on speed
-    y += speed; //Change the y co-ordinate based on speed
+    if(n ==0) {
+      x += speed; //Change the x co-ordinate based on speed
+      y -= speed; //Change the y co-ordinate based on speed
+    }
+    else if (n == 1) {
+      x += speed;
+      y += speed;
+    }    
+    a.rotate(radians(rotSpeed));
     display(); //Calls to display after moving x and y
   }
   
@@ -233,9 +283,8 @@ The display() function ensures the asteroid is within the defined boundaries and
     if(y > (height + (size/2))) {
       y = (0 - (size/2));
     }
-    
     shape(a, x, y); //draw the PShape (asteroid)
-  }
+}
   
 /**
 This function returns the current x co-ordinate of the asteroid
