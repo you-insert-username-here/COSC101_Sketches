@@ -30,27 +30,26 @@ void draw() {
     asteroids.get(i).move(); //Make them move
     } 
   }
-  if (asteroids.size() == 0) {
-    reset();
-    start = 1;
+  if (asteroids.size() == 0) { //If no asteroids left reset the level.
+    reset(); //Reset
+    start = 1; //Remakes asteroids
   }
   if(start == 1) { //If user clicks "PLAY GAME" do this
     asteroids.clear(); //Removes the start screen asteroids
     asteroidCreate(3, 60); //Creates the games asteroids
     start++; //Increment start by 1 to ensure no more asteroids are created
     }
-  else if(lives < 1) {
-     start++;
-     gameOver();
+  else if(lives < 1) { //If out of lives Game over.
+     //start++; //This may be redundent code leaving here for now.
+     gameOver(); //Displays the end screen
    }
-  else if(start == 2) { 
+  else if(start == 2) { //This is the main game display
     ship(); //Displays the triangle ship
     //For loop to move each asteroid in the array of asteroids.
     for (int i = 0; i < asteroids.size(); i++) {
       asteroids.get(i).move(); //Move function to move the asteroids
       shipCollision(); //Check if ship collides with any asteroid
-      
-    }
+     }
   }
   fill(255); //white
   textSize(32); //Set the score text size
@@ -104,7 +103,6 @@ void startMenu() {
   text("ASTEROIDS",120,300);
   textSize(32);
   text("PLAY GAME",200,450);
-
 }
 
 /**
@@ -132,11 +130,11 @@ void reset() {
 Function checks for user mouse Click
 **/
 void mousePressed() {
-  if(mouseX > 100 && mouseX < 500 && mouseY< 500 && mouseY > 400 && start == 0) {
+  if(mouseX > 100 && mouseX < 500 && mouseY< 500 && mouseY > 400 && start == 0) { //Start Screen
     start = 1;
     
 }
-  if(mouseX > 100 && mouseX < 500 && mouseY< 500 && mouseY > 400 && lives < 1){
+  if(mouseX > 100 && mouseX < 500 && mouseY< 500 && mouseY > 400 && lives < 1){ //Game Over Screen
     start = 0;
     score = 0;
     lives = 3;
@@ -158,9 +156,9 @@ void keyReleased() {
 /**
 Function creates initial asteroids for start screen and game play.
 **/
-void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) {
-  int a = amountOfAsteroids;
-  int size2 = sizeOfAsteroids;
+void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) { //Could change this to include x/y parameters
+  int a = amountOfAsteroids; //How many asteroids to make
+  int size2 = sizeOfAsteroids; //The size of the asteroids
   //Create the initial asteroids inside an array.   
   for(int i = 0; i < a; i++) { 
   //Each asteroid has a random x and y starting co-ordinate between 0-600 and a random speed between -2,2 (Need to further limit this so asteroids can't start in middle)
