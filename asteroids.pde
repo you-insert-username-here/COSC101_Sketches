@@ -7,13 +7,14 @@ ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>(); //Create a new ListAr
 ArrayList<Cannon> cannons = new ArrayList<Cannon>();
 float shipX = 300; //X- co-oridnate of the tip of the ship
 float shipY = 300; //Y- co-oridnate of the tip of the ship
-float shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
+float shipAngle = radians(180.0); //Angle that the ship is facing, starts facing up.
 float sSpeedX = 0.0; //Variable to store ship X movement speed
 float sSpeedY = 0.0; //Variable to store ship Y movement speed
 float acceleration = 0.03; //Increment of how fast the ship accelerates when keys pressed
 float drag = 0.995; //Coefficient of drag applied to the ship (almost 1 i.e space)
 boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
 int frames; //Frame counter for cannon firing rate
+
 
 
 void setup() {
@@ -221,7 +222,7 @@ Function displays the cannon bullets
 void shoot() {
   if (buttonPressed[' '] && frameCount - frames > 15) { //If the space key is pressed and it has been more than 15 frames (i.e fire rate) do this
       frames = frameCount; //Stores the current frameCount
-      cannons.add(new Cannon(shipX, shipY, shipAngle, 1)); //Create new cannon object
+      cannons.add(new Cannon(shipX, shipY, shipAngle + radians(90), 1)); //Create new cannon object
       for(int i = 0; i < cannons.size(); i++) { //For loop to display each cannon object
         cannons.get(i).display();
       }
@@ -268,12 +269,12 @@ void ship() {
       shipAngle += radians(3.0); //Rotate ship right 3.0 degrees
     }
     if (buttonPressed[UP]) { //If the Up key is pressed do this.
-      sSpeedX += cos(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
-      sSpeedY += sin(shipAngle) * acceleration; //Ship speed is increased based on angle and acceleration increment
+      sSpeedX += cos(shipAngle + radians(90)) * acceleration; //Ship speed is increased based on angle and acceleration increment
+      sSpeedY += sin(shipAngle + radians(90)) * acceleration; //Ship speed is increased based on angle and acceleration increment
     }
     if (buttonPressed[DOWN]) { //If the Down key is pressed do this.
-      sSpeedX -= cos(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
-      sSpeedY -= sin(shipAngle) * acceleration; //Ship speed is decreased based on angle and acceleration increment
+      sSpeedX -= cos(shipAngle + radians(90)) * acceleration; //Ship speed is decreased based on angle and acceleration increment
+      sSpeedY -= sin(shipAngle + radians(90)) * acceleration; //Ship speed is decreased based on angle and acceleration increment
     }
     
     
@@ -284,7 +285,12 @@ void ship() {
   translate(shipX, shipY); //Translate based of the ships tip x and y coordinate (to allow for rotation)
   rotate(shipAngle); //rotate based on the angle input from left or right arrow key
   //draw the new ship triangle
-  triangle (-20, -10, 10, 0, -20, 10);
+  triangle (0, 5, -5, -10, +5, -10);
+  if(buttonPressed[UP]){ //if the up button is pressed draw the flames for boost
+    noStroke();
+    fill(255, random(0,255),0, random(0,255)); //random orange-red-yellow colours
+    ellipse(0,-14, random(0,7), random(2,12)); //random size ellipses out the stern
+  }
   popMatrix(); 
 }
 
