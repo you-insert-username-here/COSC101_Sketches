@@ -4,6 +4,7 @@ int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
 int asteroidSize = 60; //variable to store current asteroid size
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>(); //Create a new ListArray of Asteroid objects
+ArrayList<Cannon> cannons = new ArrayList<Cannon>();
 float shipX = 300; //X- co-oridnate of the tip of the ship
 float shipY = 300; //Y- co-oridnate of the tip of the ship
 float shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
@@ -12,6 +13,8 @@ float sSpeedY = 0.0; //Variable to store ship Y movement speed
 float acceleration = 0.03; //Increment of how fast the ship accelerates when keys pressed
 float drag = 0.995; //Coefficient of drag applied to the ship (almost 1 i.e space)
 boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
+int frames; //Frame counter for cannon firing rate
+
 
 void setup() {
   size(600, 600);  //Initilise screen size
@@ -36,6 +39,7 @@ void draw() {
   }
   if(start == 1) { //If user clicks "PLAY GAME" do this
     asteroids.clear(); //Removes the start screen asteroids
+    cannons.clear();
     asteroidCreate(3, 60); //Creates the games asteroids
     start++; //Increment start by 1 to ensure no more asteroids are created
     }
@@ -45,17 +49,70 @@ void draw() {
    }
   else if(start == 2) { //This is the main game display
     ship(); //Displays the triangle ship
+    shoot();
     //For loop to move each asteroid in the array of asteroids.
+    
     for (int i = 0; i < asteroids.size(); i++) {
       asteroids.get(i).move(); //Move function to move the asteroids
       shipCollision(); //Check if ship collides with any asteroid
+      cannonCollision(); //Check if the cannon bullets collides with any asteroid
+      //noFill();
+      //strokeWeight(5);
+      //stroke(255);
+      //point(asteroids.get(i).getX(), asteroids.get(i).getY());
+      //ellipse(asteroids.get(i).getX(), asteroids.get(i).getY(), 60, 60);
      }
+     for(int i = 0; i < cannons.size(); i++) { //Loops through each cannon object
+       cannons.get(i).fire(); //Fires the cannon bullets
+     }
+     
   }
   fill(255); //white
   textSize(32); //Set the score text size
   text("SCORE: " + score, 10, 30); //Display score
   text("SHIPS: " + lives, 470, 30); //Display lives remaining
   
+}
+
+/**
+This function checks for cannon bullet collission with asteroids.
+**/
+void cannonCollision() { 
+  float cX = 0; //stores cannon X
+  float cY = 0; //stores cannon y
+  float aX = 0; //stores asteroid x
+  float aY = 0; //stores asteroid y
+  
+for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon bullet
+  cX = cannons.get(j).getX(); 
+  cY = cannons.get(j).getY();
+  for(int i = 0; i < asteroids.size(); i++ ){ //for loop, loops through each asteroid
+    aX = asteroids.get(i).getX();
+    aY = asteroids.get(i).getY();
+      if(cX < aX + asteroids.get(i).getSize() && cX > aX - asteroids.get(i).getSize() && cY < aY + asteroids.get(i).getSize() && cY > aY - asteroids.get(i).getSize()) {
+         if(asteroids.get(i).getSize() == 60) { //if the asteroid that is shot is a big one create two medium ones at the asteroids current x/y
+            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
+            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2)); 
+            score += 10; //Increment the score by 10 for a large asteroid
+            cannons.remove(j); //Remove the Cannon that collided
+            asteroids.remove(i); //remove the Asteroid that collided
+          }
+         else if(asteroids.get(i).getSize() == 30) { //If the asteroid that is shot is a medium one create two small ones at asteroids current x/y
+            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
+            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
+            asteroids.remove(i); //Remove the medium asteroid
+            score += 25; //Increment the score by 25 for a medium asteroid
+            cannons.remove(j); //Remove the Cannon that collided
+            asteroids.remove(i); //remove the Asteroid that collided
+         }
+         else if(asteroids.get(i).getSize() == 15) { //If the asteroid that is shot is the smallest one remove it all together
+            score += 50; //Increment the score by 50 for a small asteroid
+            cannons.remove(j); //Remove the Cannon that collided
+            asteroids.remove(i); //remove the Asteroid that collided
+         }
+       }
+    }
+  }
 }
 
 /**
@@ -72,8 +129,6 @@ void shipCollision() {
     //Logical statement to check if the x and y of the ship are close enough to the x and y of the asteroid to make a collission
     if(shipX < aX + asteroids.get(i).getSize() && shipX > aX - asteroids.get(i).getSize() && shipY < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
       //reset the ship to starting position
-      shipX = 300; 
-      shipY = 300;
       reset();
       
       if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
@@ -119,6 +174,9 @@ void gameOver() {
 This Function resets starting parameters.
 **/
 void reset() {
+  shipX = 300; 
+  shipY = 300;
+  cannons.clear();
   sSpeedX = 0.0;
   sSpeedY = 0.0;
   shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
@@ -143,14 +201,31 @@ void mousePressed() {
 }
 
 /**
-Function checks for key presses and releases
+Function checks for key presses
 **/
 void keyPressed() {
     buttonPressed[keyCode] = true; //Assign true to the key that has been pressed
 }
- 
+
+/**
+Function checks for key releases
+**/ 
 void keyReleased() {
     buttonPressed[keyCode] = false; //Asign false to the key when the key is released
+ 
+}
+
+/**
+Function displays the cannon bullets
+**/ 
+void shoot() {
+  if (buttonPressed[' '] && frameCount - frames > 15) { //If the space key is pressed and it has been more than 15 frames (i.e fire rate) do this
+      frames = frameCount; //Stores the current frameCount
+      cannons.add(new Cannon(shipX, shipY, shipAngle, 1)); //Create new cannon object
+      for(int i = 0; i < cannons.size(); i++) { //For loop to display each cannon object
+        cannons.get(i).display();
+      }
+    }
 }
 
 /**
@@ -204,12 +279,65 @@ void ship() {
     
   smooth(); 
   fill(255); //white
+  strokeWeight(0);
   pushMatrix(); 
   translate(shipX, shipY); //Translate based of the ships tip x and y coordinate (to allow for rotation)
   rotate(shipAngle); //rotate based on the angle input from left or right arrow key
   //draw the new ship triangle
   triangle (-20, -10, 10, 0, -20, 10);
   popMatrix(); 
+}
+
+
+/**
+Cannon Class creates cannon objects.
+**/
+class Cannon {
+  float x; //Stores cannon x co-ordinate
+  float y; //Stores cannon y co-ordinate
+  float speed = 1.85; //Cannon bullet fire speed
+  float size = 5; //possible future upgrade
+  float angle; //Stores the angle to shoot bullet
+  
+//Constructor accepts x/y of ship angle of ship and size of cannon  
+  Cannon(float cx, float cy, float cAngle, int cSize) { 
+    x = cx; //Sets cannon x to shipX
+    y = cy; //Sets cannon y to shipY
+    //size = cSize; //Sets the cannon Size - not currently used
+    angle = cAngle; //Sets the direction to the direction the ship is currently pointing
+  }  
+
+/**
+Function draws the cannon bullet
+**/
+  void display() {
+    stroke(255);
+    strokeWeight(size); //Size of the cannon bullet
+    point(x, y); //Draws teh cannon bullet
+  }
+  
+/**
+Function moves the cannon bullet in the direction the ship was pointing
+**/  
+  void fire() { 
+      x += (speed * cos(angle) * 5); //Change the x co-ordinate based on speed
+      y += (speed * sin(angle) * 5); //Change the y co-ordinate based on speed
+      display(); //Calls to display after moving x and y
+  }
+
+/**
+Function returns the cannon bullets x
+**/
+  float getX(){
+    return x;
+  }
+
+/**
+Function returns the cannon bullets y
+**/
+  float getY() {
+    return y;
+  }
 }
 
 /**
@@ -224,8 +352,7 @@ class Asteroid {
   int size; //stores the size of the asteroid
   int n = round(random(0,1));
   
-  Asteroid(float ax, float ay, float aSpeed, int aSize)
-  {
+  Asteroid(float ax, float ay, float aSpeed, int aSize) {
     x = ax; //stores the x co-ordinate of the asteroid
     y = ay; //stores the y co-ordinate of the asteroid
     speed = aSpeed; //stores the speed of the asteroid, each is different
