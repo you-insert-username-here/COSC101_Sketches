@@ -4,6 +4,7 @@ int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
 int asteroidSize = 60; //variable to store current asteroid size
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>(); //Create a new ListArray of Asteroid objects
+ArrayList<Asteroid> debris = new ArrayList<Asteroid>();
 ArrayList<Cannon> cannons = new ArrayList<Cannon>();
 float shipX = 300; //X- co-oridnate of the tip of the ship
 float shipY = 300; //Y- co-oridnate of the tip of the ship
@@ -14,6 +15,7 @@ float acceleration = 0.03; //Increment of how fast the ship accelerates when key
 float drag = 0.995; //Coefficient of drag applied to the ship (almost 1 i.e space)
 boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
 int frames; //Frame counter for cannon firing rate
+int debrisFrames; //Frame counter for debris asteroid annimation
 
 
 
@@ -66,6 +68,14 @@ void draw() {
      for(int i = 0; i < cannons.size(); i++) { //Loops through each cannon object
        cannons.get(i).fire(); //Fires the cannon bullets
      }
+     if(frameCount < debrisFrames + 30){ //Check to see if debris need to be displayed. Display animation for 30 frames
+       for(int d = 0; d < debris.size(); d++){
+         debris.get(d).move(); //Make the debris asteroids move
+         debris.get(d).display(); //Display the debris aseroids
+       }
+     } else {
+       debris.clear(); //If they don't need to be displayed wipe the arrayList Buffer.
+     }
      
   }
   fill(255); //white
@@ -92,6 +102,10 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
     aY = asteroids.get(i).getY();
       if(cX < aX + asteroids.get(i).getSize() && cX > aX - asteroids.get(i).getSize() && cY < aY + asteroids.get(i).getSize() && cY > aY - asteroids.get(i).getSize()) {
          if(asteroids.get(i).getSize() == 60) { //if the asteroid that is shot is a big one create two medium ones at the asteroids current x/y
+            debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+               debris.add(new Asteroid(aX + random(0,60), aY + random(0,60), random(-0.25, 0.25), 1));
+            }
             asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
             asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2)); 
             score += 10; //Increment the score by 10 for a large asteroid
@@ -99,6 +113,10 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
             asteroids.remove(i); //remove the Asteroid that collided
           }
          else if(asteroids.get(i).getSize() == 30) { //If the asteroid that is shot is a medium one create two small ones at asteroids current x/y
+            debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+               debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
+            }
             asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
             asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
             asteroids.remove(i); //Remove the medium asteroid
@@ -107,6 +125,10 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
             asteroids.remove(i); //remove the Asteroid that collided
          }
          else if(asteroids.get(i).getSize() == 15) { //If the asteroid that is shot is the smallest one remove it all together
+            debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+               debris.add(new Asteroid(aX + random(0,15), aY + random(0,15), random(-0.25, 0.25), 1));
+            }
             score += 50; //Increment the score by 50 for a small asteroid
             cannons.remove(j); //Remove the Cannon that collided
             asteroids.remove(i); //remove the Asteroid that collided
@@ -133,17 +155,29 @@ void shipCollision() {
       reset();
       
       if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
+        debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+               debris.add(new Asteroid(aX + random(0,60), aY + random(0,60), random(-0.25, 0.25), 1));
+            }
         asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
         asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2)); 
         asteroids.remove(i); //remove the asteroid that collided
       }
       else if(asteroids.get(i).getSize() == 30) { //If the asteroid that collides is a medium one create two small ones at asteroids current x/y
+        debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+               debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
+            }
         asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
         asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
         asteroids.remove(i); //Remove the medium asteroid
       }
       else if(asteroids.get(i).getSize() == 15) { //If the asteroid is the smallest one remove it all together
-        asteroids.remove(i);
+        debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+               debris.add(new Asteroid(aX + random(0,15), aY + random(0,15), random(-0.25, 0.25), 1));
+            }
+        asteroids.remove(i); //Remove the small asteroid
       }
       
       lives--; //Reduce the amount of ships remaining by one
@@ -286,10 +320,10 @@ void ship() {
   rotate(shipAngle); //rotate based on the angle input from left or right arrow key
   //draw the new ship triangle
   triangle (0, 5, -5, -10, +5, -10);
-  if(buttonPressed[UP]){ //if the up button is pressed draw the flames for boost
+  if(buttonPressed[UP]){
     noStroke();
-    fill(255, random(0,255),0, random(0,255)); //random orange-red-yellow colours
-    ellipse(0,-14, random(0,7), random(2,12)); //random size ellipses out the stern
+    fill(255, random(0,255),0, random(0,255));
+    ellipse(0,-14, random(0,7), random(2,12));
   }
   popMatrix(); 
 }
