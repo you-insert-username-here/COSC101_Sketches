@@ -16,8 +16,8 @@ float drag = 0.995; //Coefficient of drag applied to the ship (almost 1 i.e spac
 boolean[] buttonPressed = new boolean[256]; //Boolean array to store whether a key has been pressed or released
 int frames; //Frame counter for cannon firing rate
 int debrisFrames; //Frame counter for debris asteroid annimation
-
-
+float maxSpeed = 1.0;
+int levelCount = 1;
 
 void setup() {
   size(600, 600);  //Initilise screen size
@@ -38,23 +38,43 @@ void draw() {
   }
   if (asteroids.size() == 0) { //If no asteroids left reset the level.
     reset(); //Reset
+    levelCount++;
+    lives++;
     start = 1; //Remakes asteroids
   }
   if(start == 1) { //If user clicks "PLAY GAME" do this
     asteroids.clear(); //Removes the start screen asteroids
     cannons.clear();
-    asteroidCreate(3, 60); //Creates the games asteroids
-    start++; //Increment start by 1 to ensure no more asteroids are created
+    switch (levelCount) {
+      case 1: asteroidCreate(3, 60); //Creates the games asteroids
+              break;
+      case 2: asteroidCreate(3, 60); //Creates the games asteroids
+              maxSpeed += 0.5;
+              break;
+      case 3: asteroidCreate(4, 60); //Creates the games asteroids
+              break;
+      case 4: asteroidCreate(4, 60); //Creates the games asteroids
+              maxSpeed += 0.5;
+              break;
+      case 5: asteroidCreate(5, 60); //Creates the games asteroids
+              break;
+      case 6: asteroidCreate(5, 60); //Creates the games asteroids
+              maxSpeed += 0.5;
+              break;
+      case 7: asteroidCreate(6, 60); //Creates the games asteroids
+              break;
+      default: asteroidCreate(6, 60); //Creates the games asteroids
+              maxSpeed = 3.0;
+              break;
     }
-  else if(lives < 1) { //If out of lives Game over.
+    start++; //Increment start by 1 to ensure no more asteroids are created
+  } else if(lives < 1) { //If out of lives Game over.
      //start++; //This may be redundent code leaving here for now.
      gameOver(); //Displays the end screen
-   }
-  else if(start == 2) { //This is the main game display
+  } else if(start == 2) { //This is the main game display
     ship(); //Displays the triangle ship
     shoot();
     //For loop to move each asteroid in the array of asteroids.
-    
     for (int i = 0; i < asteroids.size(); i++) {
       asteroids.get(i).move(); //Move function to move the asteroids
       shipCollision(); //Check if ship collides with any asteroid
@@ -73,16 +93,15 @@ void draw() {
          debris.get(d).move(); //Make the debris asteroids move
          debris.get(d).display(); //Display the debris aseroids
        }
-     } else {
+   } else {
        debris.clear(); //If they don't need to be displayed wipe the arrayList Buffer.
-     }
+   }
      
   }
   fill(255); //white
   textSize(32); //Set the score text size
   text("SCORE: " + score, 10, 30); //Display score
-  text("SHIPS: " + lives, 470, 30); //Display lives remaining
-  
+  text("SHIPS: " + lives, 470, 30); //Display lives remaining 
 }
 
 /**
@@ -92,14 +111,14 @@ void cannonCollision() {
   float cX = 0; //stores cannon X
   float cY = 0; //stores cannon y
   float aX = 0; //stores asteroid x
-  float aY = 0; //stores asteroid y
-  
+  float aY = 0; //stores asteroid y 
+
 for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon bullet
   cX = cannons.get(j).getX(); 
   cY = cannons.get(j).getY();
-  for(int i = 0; i < asteroids.size(); i++ ){ //for loop, loops through each asteroid
-    aX = asteroids.get(i).getX();
-    aY = asteroids.get(i).getY();
+    for(int i = 0; i < asteroids.size(); i++ ){ //for loop, loops through each asteroid
+      aX = asteroids.get(i).getX();
+      aY = asteroids.get(i).getY();
       if(cX < aX + asteroids.get(i).getSize() && cX > aX - asteroids.get(i).getSize() && cY < aY + asteroids.get(i).getSize() && cY > aY - asteroids.get(i).getSize()) {
          if(asteroids.get(i).getSize() == 60) { //if the asteroid that is shot is a big one create two medium ones at the asteroids current x/y
             debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
@@ -107,9 +126,10 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
                debris.add(new Asteroid(aX + random(0,60), aY + random(0,60), random(-0.25, 0.25), 1));
             }
             asteroidCreate(2, asteroidSize/2, aX, aY);
+            asteroids.remove(i); //remove the Asteroid that collided
             cannons.remove(j); //Remove the Cannon that collided
             score += 10; //Increment the score by 10 for a large asteroid
-            asteroids.remove(i); //remove the Asteroid that collided
+            break;
           }
          else if(asteroids.get(i).getSize() == 30) { //If the asteroid that is shot is a medium one create two small ones at asteroids current x/y
             debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
@@ -117,10 +137,10 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
                debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
             }
             asteroidCreate(2, asteroidSize/4, aX, aY);
-            asteroids.remove(i); //Remove the medium asteroid
             score += 25; //Increment the score by 25 for a medium asteroid
-            cannons.remove(j); //Remove the Cannon that collided
             asteroids.remove(i); //remove the Asteroid that collided
+            cannons.remove(j); //Remove the Cannon that collided
+            break;
          }
          else if(asteroids.get(i).getSize() == 15) { //If the asteroid that is shot is the smallest one remove it all together
             debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
@@ -128,8 +148,9 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
                debris.add(new Asteroid(aX + random(0,15), aY + random(0,15), random(-0.25, 0.25), 1));
             }
             score += 50; //Increment the score by 50 for a small asteroid
-            cannons.remove(j); //Remove the Cannon that collided
             asteroids.remove(i); //remove the Asteroid that collided
+            cannons.remove(j); //Remove the Cannon that collided
+            break;
          }
        }
     }
@@ -151,7 +172,6 @@ void shipCollision() {
     if(shipX < aX + asteroids.get(i).getSize() && shipX > aX - asteroids.get(i).getSize() && shipY < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
       //reset the ship to starting position
       reset();
-      
       if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
         debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
             for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
@@ -199,6 +219,8 @@ void gameOver() {
   text("GAME OVER",120,300);
   textSize(32);
   text("RESET",265,450);
+  levelCount = 1;
+  maxSpeed = 1;
 }  
 
 /**
@@ -270,7 +292,7 @@ void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids, float x, float y
   //Create the initial asteroids inside an array.   
  for (int i = 0; i < a; i++) { 
     //Each asteroid has a random x and y starting co-ordinate between that is between 0 and 600, but 50 away from the ship in x and y, and a random speed between -2,2 
-    asteroids.add(new Asteroid(aX, aY, random(-2, 2), size2));
+    asteroids.add(new Asteroid(aX, aY, random(-maxSpeed, maxSpeed), size2));
   }
 }
 
@@ -290,7 +312,7 @@ void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) { //Could change
     int y2 = int(random(shipY+80, 600));
     int x = random.nextBoolean() ? x1: x2;
     int y = random.nextBoolean() ? y1: y2;
-    asteroids.add(new Asteroid(x, y, random(-2, 2), size2));
+    asteroids.add(new Asteroid(x, y, random(-maxSpeed, maxSpeed), size2));
   }
 }
   
