@@ -284,10 +284,10 @@ void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) { //Could change
  for (int i = 0; i < a; i++) { 
     //Each asteroid has a random x and y starting co-ordinate between that is between 0 and 600, but 50 away from the ship in x and y, and a random speed between -2,2 
     Random random = new Random();
-    int x1 = int(random(0, shipX-50));
-    int x2 = int(random(shipX+50, 600));
-    int y1 = int(random(0, shipY-50));
-    int y2 = int(random(shipY+50, 600));
+    int x1 = int(random(0, shipX-80));
+    int x2 = int(random(shipX+80, 600));
+    int y1 = int(random(0, shipY-80));
+    int y2 = int(random(shipY+80, 600));
     int x = random.nextBoolean() ? x1: x2;
     int y = random.nextBoolean() ? y1: y2;
     asteroids.add(new Asteroid(x, y, random(-2, 2), size2));
