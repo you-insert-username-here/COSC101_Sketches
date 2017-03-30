@@ -106,10 +106,9 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
             for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
                debris.add(new Asteroid(aX + random(0,60), aY + random(0,60), random(-0.25, 0.25), 1));
             }
-            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
-            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2)); 
-            score += 10; //Increment the score by 10 for a large asteroid
+            asteroidCreate(2, asteroidSize/2, aX, aY);
             cannons.remove(j); //Remove the Cannon that collided
+            score += 10; //Increment the score by 10 for a large asteroid
             asteroids.remove(i); //remove the Asteroid that collided
           }
          else if(asteroids.get(i).getSize() == 30) { //If the asteroid that is shot is a medium one create two small ones at asteroids current x/y
@@ -117,8 +116,7 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
             for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
                debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
             }
-            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
-            asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
+            asteroidCreate(2, asteroidSize/4, aX, aY);
             asteroids.remove(i); //Remove the medium asteroid
             score += 25; //Increment the score by 25 for a medium asteroid
             cannons.remove(j); //Remove the Cannon that collided
@@ -159,8 +157,7 @@ void shipCollision() {
             for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
                debris.add(new Asteroid(aX + random(0,60), aY + random(0,60), random(-0.25, 0.25), 1));
             }
-        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2));
-        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/2)); 
+        asteroidCreate(2, asteroidSize/2, aX, aY);
         asteroids.remove(i); //remove the asteroid that collided
       }
       else if(asteroids.get(i).getSize() == 30) { //If the asteroid that collides is a medium one create two small ones at asteroids current x/y
@@ -168,8 +165,7 @@ void shipCollision() {
             for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
                debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
             }
-        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
-        asteroids.add(new Asteroid(aX, aY, random(-2,2), asteroidSize/4)); 
+        asteroidCreate(2, asteroidSize/4, aX, aY);
         asteroids.remove(i); //Remove the medium asteroid
       }
       else if(asteroids.get(i).getSize() == 15) { //If the asteroid is the smallest one remove it all together
@@ -214,7 +210,7 @@ void reset() {
   cannons.clear();
   sSpeedX = 0.0;
   sSpeedY = 0.0;
-  shipAngle = radians(270.0); //Angle that the ship is facing starts facing up.
+  shipAngle = radians(180); //Angle that the ship is facing starts facing up.
   acceleration = 0.03;
   drag = 0.995;
 }
@@ -264,15 +260,37 @@ void shoot() {
 }
 
 /**
-Function creates initial asteroids for start screen and game play.
+ Function creates asteroids for on going game play.
+**/
+void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids, float x, float y) { //Could change this to include x/y parameters
+  int a = amountOfAsteroids; //How many asteroids to make
+  int size2 = sizeOfAsteroids; //The size of the asteroids
+  float aX = x;
+  float aY = y;
+  //Create the initial asteroids inside an array.   
+ for (int i = 0; i < a; i++) { 
+    //Each asteroid has a random x and y starting co-ordinate between that is between 0 and 600, but 50 away from the ship in x and y, and a random speed between -2,2 
+    asteroids.add(new Asteroid(aX, aY, random(-2, 2), size2));
+  }
+}
+
+/**
+ Function creates asteroids for start screen and initial game play.
 **/
 void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) { //Could change this to include x/y parameters
   int a = amountOfAsteroids; //How many asteroids to make
   int size2 = sizeOfAsteroids; //The size of the asteroids
   //Create the initial asteroids inside an array.   
-  for(int i = 0; i < a; i++) { 
-  //Each asteroid has a random x and y starting co-ordinate between 0-600 and a random speed between -2,2 (Need to further limit this so asteroids can't start in middle)
-  asteroids.add(new Asteroid(int(random(0,600)), int(random(0,600)), random(-2,2), size2));
+ for (int i = 0; i < a; i++) { 
+    //Each asteroid has a random x and y starting co-ordinate between that is between 0 and 600, but 50 away from the ship in x and y, and a random speed between -2,2 
+    Random random = new Random();
+    int x1 = int(random(0, shipX-50));
+    int x2 = int(random(shipX+50, 600));
+    int y1 = int(random(0, shipY-50));
+    int y2 = int(random(shipY+50, 600));
+    int x = random.nextBoolean() ? x1: x2;
+    int y = random.nextBoolean() ? y1: y2;
+    asteroids.add(new Asteroid(x, y, random(-2, 2), size2));
   }
 }
   
