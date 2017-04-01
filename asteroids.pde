@@ -28,7 +28,7 @@ int highScore = 0; //Variable stores wether a high Score has been achieved
 String playerName = ""; //Variable stores the players name
 
 void setup() {
-  size(700, 700);  //Initilise screen size (adjustable based on the size of the game you want to play
+  size(600, 600);  //Initilise screen size (adjustable based on the size of the game you want to play
   shipX = width/2; //Ship always starts in the middle no matter the screen size
   shipY = height/2; //Ship always starts in the middle no matter the screen size
   smooth();
@@ -250,9 +250,25 @@ void startMenu() {
   //Displays the top three high scores 
   text("HIGH SCORES",width/2,400);
   textSize(25);
+  try{
   text(highScores[0] + highScores[1], width/2, 440);
   text(highScores[2] + highScores[3], width/2, 480);
   text(highScores[4] + highScores[5], width/2, 520);
+  }
+  //Error catcher, if the HighScores.txt file exists but contains no data, wrtie the default data
+  catch(ArrayIndexOutOfBoundsException e) { 
+    f = createWriter(dataPath(fileName)); //Initilise a createWriter to write to the text file
+    //Default high score values
+    f.println("Player 1: "); 
+    f.println("0");
+    f.println("Player 2: ");
+    f.println("0");
+    f.println("Player 3: ");
+    f.println("0");
+    f.flush();
+    f.close();
+    highScores = loadStrings(fileName); //Load the default values into the highScores array
+  }
 }
 
 /**
@@ -573,8 +589,13 @@ class Asteroid {
     y = ay; //stores the y co-ordinate of the asteroid
     speed = aSpeed; //stores the speed of the asteroid, each is different
     size = aSize; //stores the size of the asteroid
-    
-    rotSpeed = random(-0.75, 0.75);
+   
+    //Sets the rotation speed of the asteroids to half the speed
+    if (speed == 0) { 
+      rotSpeed = 0;
+    } else {
+      rotSpeed = speed/2;
+    }
     
     //The following lines of code create the shape of the asteroid using a PShape
     a = createShape();
