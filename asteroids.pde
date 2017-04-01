@@ -1,14 +1,14 @@
 import java.util.*;
 import java.io.*;
 int score = 0; //variable holds the score
-float start = 0; //variable either 0 or 1, 1 means user has started a newGame
+int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
 int asteroidSize = 60; //variable to store current asteroid size
 ArrayList<Asteroid> asteroids = new ArrayList<Asteroid>(); //Create a new ListArray of Asteroid objects
 ArrayList<Asteroid> debris = new ArrayList<Asteroid>();
 ArrayList<Cannon> cannons = new ArrayList<Cannon>();
-float shipX = 300; //X- co-oridnate of the tip of the ship
-float shipY = 300; //Y- co-oridnate of the tip of the ship
+float shipX; //X- co-oridnate of the tip of the ship
+float shipY; //Y- co-oridnate of the tip of the ship
 float shipAngle = radians(180.0); //Angle that the ship is facing, starts facing up.
 float sSpeedX = 0.0; //Variable to store ship X movement speed
 float sSpeedY = 0.0; //Variable to store ship Y movement speed
@@ -24,21 +24,24 @@ ShipDebris sDebris; //Strores the ship debris object
 String highScores[]; //Stores the high scores & names strings from file
 final String fileName = "HighScores.txt"; //Creates a final variable to store the HighScores in
 PrintWriter f; //Creates a print writer to output to file for high scores
-int highScore = 0;
-String playerName = "";
+int highScore = 0; //Variable stores wether a high Score has been achieved
+String playerName = ""; //Variable stores the players name
 
 void setup() {
-  size(600, 600);  //Initilise screen size
+  size(700, 700);  //Initilise screen size (adjustable based on the size of the game you want to play
+  shipX = width/2; //Ship always starts in the middle no matter the screen size
+  shipY = height/2; //Ship always starts in the middle no matter the screen size
   smooth();
   background(0); //Black
   File file = new File(dataPath(fileName)); //Create a new file object with the file path
   boolean exists = file.exists(); //boolean object to check if the high scores file exists
   if (exists) { //if the high scores file already exists load the high scores
-    highScores = loadStrings(fileName);
+    highScores = loadStrings(fileName); //Loads the highscores from text file "HighScores.txt" in the sketch data path
   }
-  else { //else create a high scores file with default values below
-    f = createWriter(dataPath(fileName));
-    f.println("Player 1: ");
+  else { //I the High Scores text file doesn't exist create a high scores file with default values below
+    f = createWriter(dataPath(fileName)); //Initilise a createWriter to write to the text file
+    //Default high score values
+    f.println("Player 1: "); 
     f.println("0");
     f.println("Player 2: ");
     f.println("0");
@@ -46,7 +49,7 @@ void setup() {
     f.println("0");
     f.flush();
     f.close();
-    highScores = loadStrings(fileName);
+    highScores = loadStrings(fileName); //Load the default values into the highScores array
   }
   
   asteroidCreate(3, 60); //setup initial asteroids
@@ -55,86 +58,83 @@ void setup() {
 }
 
 void draw() {
-  background(0);
-  if (start == 0) { //Check if the user has started the game
-    startMenu(); //Draw the start screen
-    for (int i = 0; i < asteroids.size(); i++) { //loop through the list of asteroids
-    asteroids.get(i).move(); //Make them move
-    } 
+  background(0); //Black
+  if(lives < 1) { //If out of lives Game over.
+     gameOver(); //Displays the end screen
   }
   if (asteroids.size() == 0) { //If no asteroids left reset the level.
-    reset(); //Reset
+    reset(); //Reset the starting parameters
     levelCount++; //Increment the level count by one after asteroids on screen reaches 0
     lives++; //Increment the players lives by one after asteroids on screen reaches 0
-    start = 1; //Remakes asteroids
+    start = 2; //Remakes asteroids
   }
-  if(start == 0.5) {
-    playerNameMenu();
-  }
-  if(start == 1) { //If user clicks "PLAY GAME" do this
-    asteroids.clear(); //Removes the start screen asteroids
-    cannons.clear(); //Removes all cannon bullets from screen
+  switch(start) { //Switch statement to change between menu screens
+    case 0:   startMenu(); //Draw the start screen
+              for (int i = 0; i < asteroids.size(); i++) { //loop through the list of asteroids
+              asteroids.get(i).move(); //Make them move
+              } 
+              break;
+    case 1: playerNameMenu(); //Menu for player to enter their name
+              break;
+    case 2:   asteroids.clear(); //Removes the start screen asteroids
+              cannons.clear(); //Removes all cannon bullets from screen
     //Switch statement to increase level difficulty up to max level 8, which has 6 starting asteroids with a max speed possible of 3.0
-    switch (levelCount) {
-      case 1: asteroidCreate(3, 60); //Creates the games asteroids
-              break;
-      case 2: asteroidCreate(3, 60); //Creates the games asteroids
-              maxSpeed += 0.5;
-              break;
-      case 3: asteroidCreate(4, 60); //Creates the games asteroids
-              break;
-      case 4: asteroidCreate(4, 60); //Creates the games asteroids
-              maxSpeed += 0.5;
-              break;
-      case 5: asteroidCreate(5, 60); //Creates the games asteroids
-              break;
-      case 6: asteroidCreate(5, 60); //Creates the games asteroids
-              maxSpeed += 0.5;
-              break;
-      case 7: asteroidCreate(6, 60); //Creates the games asteroids
-              break;
-      default: asteroidCreate(6, 60); //Creates the games asteroids
-              maxSpeed = 3.0;
-              break;
+              switch (levelCount) { 
+                case 1: asteroidCreate(3, 60); //Creates the games asteroids
+                        break;
+                case 2: asteroidCreate(3, 60); //Creates the games asteroids
+                        maxSpeed += 0.5; //Increases asteroids speed
+                        break;
+                case 3: asteroidCreate(4, 60); //Creates the games asteroids
+                        break;
+                case 4: asteroidCreate(4, 60); //Creates the games asteroids
+                        maxSpeed += 0.5; //Increases asteroids speed
+                        break;
+                case 5: asteroidCreate(5, 60); //Creates the games asteroids
+                        break;
+                case 6: asteroidCreate(5, 60); //Creates the games asteroids
+                        maxSpeed += 0.5; //Increases asteroids speed
+                        break;
+                case 7: asteroidCreate(6, 60); //Creates the games asteroids
+                        break;
+                default: asteroidCreate(6, 60); //Creates the games asteroids
+                         maxSpeed = 3.0; //Increases asteroids speed
+                         break;
+              }
+              start++; //Increment start by 1 to ensure no more asteroids are created 
+    case 3:  if(lives > 0) {
+                ship(); //Displays the triangle ship
+                shoot(); //Shoot the cannon bullets
+            //For loop to move each asteroid in the array of asteroids.
+                 for (int i = 0; i < asteroids.size(); i++) {
+                    asteroids.get(i).move(); //Move function to move the asteroids
+                    shipCollision(); //Check if ship collides with any asteroid
+                    cannonCollision(); //Check if the cannon bullets collides with any asteroid
+                 }
+                 for(int i = 0; i < cannons.size(); i++) { //Loops through each cannon object
+                    cannons.get(i).fire(); //Fires the cannon bullets
+                 }
+                 if(frameCount < debrisFrames + 30){ //Check to see if debris need to be displayed. Display animation for 30 frames
+                   for(int d = 0; d < debris.size(); d++){
+                      debris.get(d).move(); //Make the debris asteroids move
+                      debris.get(d).display(); //Display the debris aseroids
+                    }
+                 } else {
+                    debris.clear(); //If they don't need to be displayed wipe the arrayList Buffer.
+                 }
+                 if(frameCount < shipFrames + 40) { //Display the ship debris for 40 frames after a ship crash
+                   sDebris.display();
+                 }
+                 break;
     }
-    start++; //Increment start by 1 to ensure no more asteroids are created
-  } else if(lives < 1) { //If out of lives Game over.
-     //start++; //This may be redundent code leaving here for now.
-     gameOver(); //Displays the end screen
-  } else if(start == 2) { //This is the main game display
-    ship(); //Displays the triangle ship
-    shoot(); //Shoot the cannon bullets
-    //For loop to move each asteroid in the array of asteroids.
-    for (int i = 0; i < asteroids.size(); i++) {
-      asteroids.get(i).move(); //Move function to move the asteroids
-      shipCollision(); //Check if ship collides with any asteroid
-      cannonCollision(); //Check if the cannon bullets collides with any asteroid
-      //noFill();
-      //strokeWeight(5);
-      //stroke(255);
-      //point(asteroids.get(i).getX(), asteroids.get(i).getY());
-      //ellipse(asteroids.get(i).getX(), asteroids.get(i).getY(), 60, 60);
-     }
-     for(int i = 0; i < cannons.size(); i++) { //Loops through each cannon object
-       cannons.get(i).fire(); //Fires the cannon bullets
-     }
-     if(frameCount < debrisFrames + 30){ //Check to see if debris need to be displayed. Display animation for 30 frames
-       for(int d = 0; d < debris.size(); d++){
-         debris.get(d).move(); //Make the debris asteroids move
-         debris.get(d).display(); //Display the debris aseroids
-       }
-     if(frameCount < shipFrames + 120) {
-       sDebris.display();
-     }
-   } else {
-       debris.clear(); //If they don't need to be displayed wipe the arrayList Buffer.
-   }
-     
   }
+  
   fill(255); //white
   textSize(32); //Set the score text size
+  textAlign(LEFT);
   text("SCORE: " + score, 10, 30); //Display score
-  text("SHIPS: " + lives, 470, 30); //Display lives remaining 
+  textAlign(RIGHT);
+  text("SHIPS: " + lives, width-5, 30); //Display lives remaining 
 }
 
 /**
@@ -169,7 +169,7 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
             for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
                debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
             }
-            asteroidCreate(2, asteroidSize/4, aX, aY);
+            asteroidCreate(2, asteroidSize/4, aX, aY); 
             score += 25; //Increment the score by 25 for a medium asteroid
             asteroids.remove(i); //remove the Asteroid that collided
             cannons.remove(j); //Remove the Cannon that collided
@@ -230,7 +230,7 @@ void shipCollision() {
             }
         asteroids.remove(i); //Remove the small asteroid
       }
-      
+      cannons.clear(); //Remove all cannon bullets after ship crash
       lives--; //Reduce the amount of ships remaining by one
     }
   }
@@ -243,31 +243,28 @@ void startMenu() {
   textAlign(CENTER);
   fill(255);
   textSize(64);
-  text("ASTEROIDS",300,250);
+  text("ASTEROIDS",width/2,250);
   textSize(32);
-  text("PLAY GAME",300,325);
+  text("PLAY GAME",width/2,325);
   
   //Displays the top three high scores 
-  text("HIGH SCORES",300,400);
+  text("HIGH SCORES",width/2,400);
   textSize(25);
-  text(highScores[0] + highScores[1], 300, 440);
-  text(highScores[2] + highScores[3], 300, 480);
-  text(highScores[4] + highScores[5], 300, 520);
-  //Realign text to left
-  textAlign(LEFT);
+  text(highScores[0] + highScores[1], width/2, 440);
+  text(highScores[2] + highScores[3], width/2, 480);
+  text(highScores[4] + highScores[5], width/2, 520);
 }
 
 /**
-Function draws the user enter name screen
+Function draws the screen for the user to input their name
 **/
 void playerNameMenu() {
   textAlign(CENTER);
   fill(255);
   textSize(64);
-  text("Enter Your Name",300,250);
+  text("Enter Your Name",width/2,250);
   textSize(32);
-  text("Name: " + playerName,300,325);
-  textAlign(LEFT);
+  text("Name: " + playerName,width/2,325);
 }
 
 /**
@@ -276,18 +273,17 @@ Function draws the end screen and checks to see if a high score has been made
 void gameOver() {
   textAlign(CENTER);
   textSize(64);
-  text("GAME OVER",300,300);
+  text("GAME OVER",width/2,300);
   textSize(32);
-  text("RESET",300,450);
+  text("RESET",width/2,450);
   levelCount = 1; //Restart level count
   maxSpeed = 1; //Reset maxSpeed of asteroids
   if(highScore == 1) { //If user achieved a high score display HIGH SCORE!! flashing
     textSize(45);
     if(frameCount % 2 == 0) { //Display every second frame to create flashing effect
-    text("HIGH SCORE!!",300,385);
+    text("HIGH SCORE!!",width/2,385);
     }
-  textAlign(LEFT);
-  }
+}
   while(score > 0) { //While loop to check for high scores, reset once high score added
     if(score > int(highScores[1])) { //Check to see if top score reached
       highScores[5] = highScores[3]; //Assign the second high score to the third high score
@@ -330,9 +326,9 @@ void gameOver() {
 This Function resets starting parameters.
 **/
 void reset() {
-  shipX = 300; 
-  shipY = 300;
   cannons.clear();
+  shipX = width/2; 
+  shipY = height/2;
   sSpeedX = 0.0;
   sSpeedY = 0.0;
   shipAngle = radians(180); //Angle that the ship is facing starts facing up.
@@ -345,7 +341,7 @@ Function checks for user mouse Click
 **/
 void mousePressed() {
   if(mouseX > 100 && mouseX < 500 && mouseY< 400 && mouseY > 225 && start == 0) { //Start Screen
-    start = 0.5;
+    start = 1;
 }
   if(mouseX > 100 && mouseX < 500 && mouseY< 500 && mouseY > 400 && lives < 1){ //Game Over Screen
     start = 0;
@@ -363,17 +359,17 @@ void keyPressed() {
     buttonPressed[keyCode] = true; //Assign true to the key that has been pressed
     
     //On the player name screen take the input and assign it to playerName variable
-    if (keyCode == BACKSPACE && start == 0.5) { //deal with backspace
+    if (keyCode == BACKSPACE && start == 1) { //deal with backspace
       if (playerName.length() > 0) {
         playerName = playerName.substring(0, playerName.length()-1);
        }
-    } else if (keyCode == DELETE && start == 0.5) { //deal with delete
+    } else if (keyCode == DELETE && start == 1) { //deal with delete
      playerName = "";
-    } else if (keyCode != SHIFT && keyCode != CONTROL && keyCode != ALT && keyCode != ENTER && start == 0.5) {
+    } else if (keyCode != SHIFT && keyCode != CONTROL && keyCode != ALT && keyCode != ENTER && start == 1) {
       playerName = playerName + key; //Assign the name typed to player name
     }
-    if(keyCode == ENTER && start == 0.5) { //Once the user presses enter start the game
-     start = 1;
+    if(keyCode == ENTER && start == 1) { //Once the user presses enter start the game
+     start = 2;
    }
 }
 
@@ -388,7 +384,7 @@ void keyReleased() {
 Function displays the cannon bullets
 **/ 
 void shoot() {
-  if (buttonPressed[' '] && frameCount - frames > 15) { //If the space key is pressed and it has been more than 15 frames (i.e fire rate) do this
+  if (buttonPressed[' '] && frameCount - frames > 15 && lives > 0) { //If the space key is pressed and it has been more than 15 frames (i.e fire rate) do this
       frames = frameCount; //Stores the current frameCount
       cannons.add(new Cannon(shipX, shipY, shipAngle + radians(90), 1)); //Create new cannon object
       for(int i = 0; i < cannons.size(); i++) { //For loop to display each cannon object
