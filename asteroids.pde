@@ -451,20 +451,32 @@ void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids, float x, float y
 /**
  Function creates asteroids for start screen and initial game play.
 **/
-void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) { //Could change this to include x/y parameters
+void asteroidCreate(int amountOfAsteroids, int sizeOfAsteroids) { //Accepts an amount and size of asteroids required.
   int a = amountOfAsteroids; //How many asteroids to make
   int size2 = sizeOfAsteroids; //The size of the asteroids
-  //Create the initial asteroids inside an array.   
- for (int i = 0; i < a; i++) { 
-    //Each asteroid has a random x and y starting co-ordinate between that is between 0 and 600, but 80 away from the ship in x and y, and a random speed between -maxSpeed, maxSpeed 
-    Random random = new Random();
-    int x1 = int(random(0, shipX-80));
-    int x2 = int(random(shipX+80, 600));
-    int y1 = int(random(0, shipY-80));
-    int y2 = int(random(shipY+80, 600));
-    int x = random.nextBoolean() ? x1: x2;
-    int y = random.nextBoolean() ? y1: y2;
-    asteroids.add(new Asteroid(x, y, random(-maxSpeed, maxSpeed), size2));
+  //Create the initial asteroids inside an array
+  for(int i = 0; i < a; i++) {
+    //Each asteroid has a random x and y starting co-ordinate that is between 0 and 600, but 120 away from the ship 
+//in x OR y, and a random speed between -maxSpeed and maxSpeed
+    int x1 = int(random(0, shipX-120));
+    int x2 = int(random(shipX+120, 600));
+    int y1 = int(random(0, shipY-120));
+    int y2 = int(random(shipY+120, 600));
+    int[] randints = { x1, x2, y1, y2 };
+    // Randomly selects one of the position constraints above
+    int index = int(random(randints.length));
+    int xy = randints[index];
+    //if /else if condition for allowing more possible asteroid positions
+    if(xy == x1 || xy == x2) {
+      int x = xy;
+      int y = int(random(0,600));
+      asteroids.add(new Asteroid(x, y, random(-maxSpeed, maxSpeed), size2));
+    }
+    else if(xy == y1 || xy == y2) {
+      int y = xy;
+      int x = int(random(0,600));
+      asteroids.add(new Asteroid(x, y, random(-maxSpeed, maxSpeed), size2));
+    }
   }
 }
   
