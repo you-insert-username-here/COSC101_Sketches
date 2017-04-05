@@ -26,6 +26,7 @@ final String fileName = "HighScores.txt"; //Creates a final variable to store th
 PrintWriter f; //Creates a print writer to output to file for high scores
 int highScore = 0; //Variable stores wether a high Score has been achieved
 String playerName = ""; //Variable stores the players name
+int pauseInt = 0;
 
 void setup() {
   size(600, 600);  //Initilise screen size (adjustable based on the size of the game you want to play
@@ -51,7 +52,6 @@ void setup() {
     f.close();
     highScores = loadStrings(fileName); //Load the default values into the highScores array
   }
-  
   asteroidCreate(3, 60); //setup initial asteroids
   asteroidCreate(2, 30); //smaller initial asteroids
   asteroidCreate(1, 15); //smallest initial asteroids
@@ -127,6 +127,8 @@ void draw() {
                  }
                  break;
     }
+    case 4: pause();
+            break;
   }
   
   fill(255); //white
@@ -339,6 +341,20 @@ void gameOver() {
 }  
 
 /**
+This Function draws the pause screen
+**/
+void pause() {
+  if(pauseInt == 1){ //If pauseInt == 1 display pause screen
+    fill(255);
+    textSize(64);
+    textAlign(CENTER);
+    text("PAUSED", 300, 350);
+    textSize(100);
+    text("II", 300, 250);
+  }
+}
+
+/**
 This Function resets starting parameters.
 **/
 void reset() {
@@ -381,12 +397,20 @@ void keyPressed() {
        }
     } else if (keyCode == DELETE && start == 1) { //deal with delete
      playerName = "";
-    } else if (keyCode != SHIFT && keyCode != CONTROL && keyCode != ALT && keyCode != ENTER && start == 1) {
+    } else if (keyCode != SHIFT && keyCode != CONTROL && keyCode != ALT && keyCode != ENTER && keyCode != RETURN && start == 1) {
       playerName = playerName + key; //Assign the name typed to player name
     }
     if(keyCode == ENTER && start == 1) { //Once the user presses enter start the game
      start = 2;
-   }
+    }
+    if(key == 'p' && start == 3){ //Use p key to pause the game
+      pauseInt = 1; //pauseInt to 1 to display the pause screen
+      start = 4; //Start to 4 then switch case will call the pause() function
+      pause(); //Call pause aswell to ensure it happen quickly
+    } else if(key == 'p' && start == 4) { //Use p key to unpause the game
+      start = 3; //Back to gameplay
+      pauseInt = 0; //Game not paused 
+    }
 }
 
 /**
@@ -571,6 +595,7 @@ Function returns the cannon bullets y
     return y;
   }
 }
+
 
 /**
 Asteroid Class creates asteroids objects.
