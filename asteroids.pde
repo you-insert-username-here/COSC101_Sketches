@@ -1,5 +1,10 @@
 import java.util.*;
 import java.io.*;
+
+int time; //Variable to hold point in time in ms
+int tempInvincibility = 3000; //Variable to hold invincibility time in ms after collision
+boolean isInvincible; //Variable to hold invincibilty status
+
 int score = 0; //variable holds the score
 int start = 0; //variable either 0 or 1, 1 means user has started a newGame
 int lives = 3; //variable to hold the number of lives when = 0 game over
@@ -29,6 +34,8 @@ String playerName = ""; //Variable stores the players name
 int pauseInt = 0;
 
 void setup() {
+  isInvincible = false; //Initialise isInvincible to be false at setup
+  time = 0; //Initialise time to zero at setup
   size(600, 600);  //Initilise screen size (adjustable based on the size of the game you want to play
   shipX = width/2; //Ship always starts in the middle no matter the screen size
   shipY = height/2; //Ship always starts in the middle no matter the screen size
@@ -193,47 +200,71 @@ for(int j = 0; j < cannons.size(); j++ ){ //for loop, loops through each cannon 
 }
 
 /**
+This function performs invincibility tests.
+If ship has just spawned, set isInvincible to true, countdown 3s and then set isInvincible to false.
+Related Variables:
+ - isInvincible       | Boolean storing whether invincibility is on or off
+ - time               | Stores current time in ms
+ - tempInvincibility  | Timer for the amount of invincibility in ms
+**/
+void invincibilityTimer(){
+  if(isInvincible){
+    if(millis() < time + tempInvincibility){
+      isInvincible = true;
+    }
+    else{
+      isInvincible = false;
+    } 
+  }
+}
+
+/**
 This function checks for ship collission with asteroids.
 **/
-void shipCollision() { 
-  for(int i = 0; i < asteroids.size(); i++) { //Loop through all asteroids to check if the collide with the ship
-    float aX = 0; //asteroid x coordinate
-    float aY = 0; //asteroid y coordinate
-        
-    aX = asteroids.get(i).getX(); //get the x-coordinate of each asteroid and store here
-    aY = asteroids.get(i).getY(); //get the y-coordinate of each asteroid and store here
-    
-    //Logical statement to check if the x and y of the ship are close enough to the x and y of the asteroid to make a collission
-    if(shipX < aX + asteroids.get(i).getSize() && shipX > aX - asteroids.get(i).getSize() && shipY < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
-      //reset the ship to starting position
-      shipFrames = frameCount; //Frame counter for ship debris
-      sDebris = new ShipDebris(shipX,shipY); //Create new ship debris in position that the ship crashed
-      reset(); //reset the starting parameters
-      if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
-        debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
-            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
-               debris.add(new Asteroid(aX + random(0,60), aY + random(0,60), random(-0.25, 0.25), 1));
-            }
-        asteroidCreate(2, asteroidSize/2, aX, aY); //Create two medium asteroids
-        asteroids.remove(i); //remove the asteroid that collided
+void shipCollision() {
+  invincibilityTimer(); //Check for invincibility
+  if(!isInvincible){
+    for(int i = 0; i < asteroids.size(); i++) { //Loop through all asteroids to check if the collide with the ship
+      float aX = 0; //asteroid x coordinate
+      float aY = 0; //asteroid y coordinate
+
+      aX = asteroids.get(i).getX(); //get the x-coordinate of each asteroid and store here
+      aY = asteroids.get(i).getY(); //get the y-coordinate of each asteroid and store here
+
+      //Logical statement to check if the x and y of the ship are close enough to the x and y of the asteroid to make a collission
+      if(shipX < aX + asteroids.get(i).getSize() && shipX > aX - asteroids.get(i).getSize() && shipY < aY + asteroids.get(i).getSize() && shipY > aY - asteroids.get(i).getSize()) {
+        //reset the ship to starting position
+        shipFrames = frameCount; //Frame counter for ship debris
+        sDebris = new ShipDebris(shipX,shipY); //Create new ship debris in position that the ship crashed
+        reset(); //reset the starting parameters
+        if(asteroids.get(i).getSize() == 60) { //if the asteroid that collides is a big one create two medium ones at the asteroids current x/y
+          debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+              for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+                 debris.add(new Asteroid(aX + random(0,60), aY + random(0,60), random(-0.25, 0.25), 1));
+              }
+          asteroidCreate(2, asteroidSize/2, aX, aY); //Create two medium asteroids
+          asteroids.remove(i); //remove the asteroid that collided
+        }
+        else if(asteroids.get(i).getSize() == 30) { //If the asteroid that collides is a medium one create two small ones at asteroids current x/y
+          debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+              for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+                 debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
+              }
+          asteroidCreate(2, asteroidSize/4, aX, aY); //Create two small asteroids
+          asteroids.remove(i); //Remove the medium asteroid
+        }
+        else if(asteroids.get(i).getSize() == 15) { //If the asteroid is the smallest one remove it all together
+          debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
+              for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
+                 debris.add(new Asteroid(aX + random(0,15), aY + random(0,15), random(-0.25, 0.25), 1));
+              }
+          asteroids.remove(i); //Remove the small asteroid
+        }
+        cannons.clear(); //Remove all cannon bullets after ship crash
+        lives--; //Reduce the amount of ships remaining by one
+        time = millis(); //Set point in time equal to elapsed time at point of collision
+        isInvincible = true; //Set invincibility to true
       }
-      else if(asteroids.get(i).getSize() == 30) { //If the asteroid that collides is a medium one create two small ones at asteroids current x/y
-        debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
-            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
-               debris.add(new Asteroid(aX + random(0,30), aY + random(0,30), random(-0.25, 0.25), 1));
-            }
-        asteroidCreate(2, asteroidSize/4, aX, aY); //Create two small asteroids
-        asteroids.remove(i); //Remove the medium asteroid
-      }
-      else if(asteroids.get(i).getSize() == 15) { //If the asteroid is the smallest one remove it all together
-        debrisFrames = frameCount; //Assign current frame count to debrisFrame for animation control
-            for(int p = 0; p < 3; p++) {  //For loop to create three asteroid objects of size 1 that look like asteroid debris
-               debris.add(new Asteroid(aX + random(0,15), aY + random(0,15), random(-0.25, 0.25), 1));
-            }
-        asteroids.remove(i); //Remove the small asteroid
-      }
-      cannons.clear(); //Remove all cannon bullets after ship crash
-      lives--; //Reduce the amount of ships remaining by one
     }
   }
 }
