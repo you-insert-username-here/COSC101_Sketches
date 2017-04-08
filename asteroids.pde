@@ -24,9 +24,9 @@ import java.io.*;
 import ddf.minim.*;
 AudioPlayer bgMusic, shipLaser, shipExplosion, alienExplosion, alienFire, alienAppear, /*shipThrust3,*/ asteroidExplode;
 AudioSample shipThrust3;
-Minim minim; //Creating a Minim object
-int blinkTime; //Variable to hold blink interval
-boolean blinkOn; //Variable to hold blinkOn state
+Minim minim;
+int blinkTime;
+boolean blinkOn;
 int time; //Variable to hold point in time in ms
 int tempInvincibility = 3000; //Variable to hold invincibility time in ms after collision
 boolean isInvincible; //Variable to hold invincibilty status
@@ -74,7 +74,7 @@ void setup() {
   shipThrust3 = minim.loadSample("shipThrust3.wav");
   asteroidExplode = minim.loadFile("asteroidExplode.wav");  
   bgMusic.loop();
-  size(900, 900);  //Initialise screen size (adjustable based on the size of the game you want to play
+  size(900, 900);  //Initilise screen size (adjustable based on the size of the game you want to play
   blinkTime = millis();
   blinkOn = true;
   isInvincible = false; //Initialise isInvincible to be false at setup
@@ -351,12 +351,11 @@ void shipCollision() {
           shipExplosion.play();
         }
       }
-      for(int j = 0; j < alienCannon.size(); j++){ //For every alien bullet 
-      float alienBulletX = alienCannon.get(j).getX(); //Store x coordinate
-      float alienBulletY = alienCannon.get(j).getY(); //Store y coordinate
+      for(int j = 0; j < alienCannon.size(); j++){ //For every alien bullet (j used to prevent confusion, or add to it)
+      float alienBulletX = alienCannon.get(j).getX();
+      float alienBulletY = alienCannon.get(j).getY();
       
-      //If ship and bullet intersect
-        if(shipX + 20 >= alienBulletX  && shipX - 20 <= alienBulletX && shipY + 20 >= alienBulletY && shipY - 20 <= alienBulletY ){ 
+        if(shipX + 20 >= alienBulletX  && shipX - 20 <= alienBulletX && shipY + 20 >= alienBulletY && shipY - 20 <= alienBulletY ){
           shipFrames = frameCount; //Frame counter for ship debris
           sDebris = new ShipDebris(shipX, shipY); //Create new ship debris in position that the ship crashed
           reset(); //reset the starting parameters
@@ -477,12 +476,12 @@ void gameOver() {
 //    if (frameCount % 4 == 0) { //Display every second frame to create flashing effect
 //      text("HIGH SCORE!!", width/2, 385);
 //    }
-    if(blinkOn){ //If blinkOn is true, display HIGH SCORE!!
+    if(blinkOn){
       text("HIGH SCORE!!", width/2, 385);
     }
-    if(millis() - 500 > blinkTime){ //If program time in ms - 500 is less than current blinkTime display nothing
-      blinkTime = millis(); //Update blinkTIme to program time in ms
-      blinkOn = !blinkOn; //Make blinkOn the opposite value of what it currently is
+    if(millis() - 500 > blinkTime){
+      blinkTime = millis();
+      blinkOn = !blinkOn;
     }
   }
   while (score > 0) { //While loop to check for high scores, reset once high score added
@@ -718,7 +717,7 @@ void ship() {
   translate(shipX, shipY); //Translate based of the ships tip x and y coordinate (to allow for rotation)
   rotate(shipAngle); //rotate based on the angle input from left or right arrow key
   //draw the new ship triangle
-  if(isInvincible){ //Creates a juicy blink to show you if you're able to be hit
+  if(isInvincible){    
     if(blinkOn){
       triangle (0, 5, -5, -10, +5, -10);
     }
@@ -992,27 +991,36 @@ class Alien {
     if (cannonTiming > width /10) { //Cannon fire rate is every 1/10 the width of the screen
       //Change the direction to fire the alien bullets based on which quadrant the alien ship is in
       //Fire at the opposite quadrant
-      if (y < height/2) {
+      float angle = atan2(shipY - y, shipX - x); //Find the angle between Ship and Alien Ship, store it in a variable
+      alienCannon.add(new Cannon(x, y, angle, 4)); //Make the alien ship deadly
+      alienFire.rewind();
+      alienFire.play();      
+      /*if (y < height/2) {
+        
         if (x > width/2) {
-          alienCannon.add(new Cannon(x, y, radians(110), 4));
+          //alienCannon.add(new Cannon(x, y, radians(110), 4));
+          alienCannon.add(new Cannon(x, y, a, 4));
           alienFire.rewind();
           alienFire.play();          
         } else {
-          alienCannon.add(new Cannon(x, y, radians(60), 4));
+          //alienCannon.add(new Cannon(x, y, radians(60), 4));
+          alienCannon.add(new Cannon(x, y, a, 4));
           alienFire.rewind();
           alienFire.play();
         }
       } else {
         if (x > width/2) {
-          alienCannon.add(new Cannon(x, y, -radians(110), 4));
+          //alienCannon.add(new Cannon(x, y, -radians(110), 4));
+          alienCannon.add(new Cannon(x, y, a, 4));
           alienFire.rewind();
           alienFire.play();          
         } else {
-          alienCannon.add(new Cannon(x, y, -radians(60), 4));
+          //alienCannon.add(new Cannon(x, y, -radians(60), 4));
+          alienCannon.add(new Cannon(x, y, a, 4));
           alienFire.rewind();
           alienFire.play();          
         }
-      }
+      }*/
       cannonTiming = 0; //Reset the distance variable
     }
   }
