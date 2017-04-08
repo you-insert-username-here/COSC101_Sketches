@@ -266,6 +266,20 @@ void cannonCollision() {
 void shipCollision() {
   invincibilityTimer(); //Check for invincibility
   if (!isInvincible) {
+    if(aliens.size() > 0){ //Check to see if alien ship exists     
+      for(int i = 0; i < aliens.size(); i++){ //For every alien that exists      
+      float aliensX = aliens.get(i).getX(); //Store the X value of the alien ship in a variable
+      float aliensY = aliens.get(i).getY(); //Store the Y value of the alien ship in a variable
+        if(shipX <= aliensX + 12.5 && shipX >= aliensX - 12.5 && shipY <= aliensY + 11 && shipY >= aliensY - 11){
+          shipFrames = frameCount; //Frame counter for ship debris
+          sDebris = new ShipDebris(shipX, shipY); //Create new ship debris in position that the ship crashed
+          reset(); //reset the starting parameters
+          cannons.clear(); //Remove all cannon bullets after ship crash
+          lives--; //Reduce the amount of ships remaining by one
+          time = millis(); //Set point in time equal to elapsed time at point of collision
+          isInvincible = true; //Set invincibility to true
+      }
+    }
     for (int i = 0; i < asteroids.size(); i++) { //Loop through all asteroids to check if the collide with the ship
       float aX = 0; //asteroid x coordinate
       float aY = 0; //asteroid y coordinate
